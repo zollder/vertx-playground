@@ -32,10 +32,12 @@ public class SysMonVerticleTest {
 		port = socket.getLocalPort();
 		socket.close();
 
-		// create deployment options and set the _configuration_ json object
+		// create deployment options and set the _configuration_json object
 		DeploymentOptions options = new DeploymentOptions()
 			.setConfig(new JsonObject()
-			.put("http.port", port));
+			.put("http.port", port)
+			.put("url", "jdbc:hsqldb:mem:test?shutdown=true")
+			.put("driver_class", "org.hsqldb.jdbcDriver"));
 
 		vertx.deployVerticle(SysMonVerticle.class.getName(), options, context.asyncAssertSuccess());
 	}
@@ -69,7 +71,8 @@ public class SysMonVerticleTest {
 		Async async = context.async();
 		vertx.createHttpClient().getNow(port, "localhost", "/assets/index.html", response -> {
 			context.assertEquals(response.statusCode(), 200);
-			context.assertEquals(response.headers().get("content-type"), "text/html");
+			System.out.println(response.headers().get("content-type"));
+				context.assertEquals("text/html;charset=UTF-8", response.headers().get("content-type"));
 			response.bodyHandler(body -> {
 				context.assertTrue(body.toString().contains("<title>My Whisky Collection</title>"));
 				async.complete();
@@ -87,7 +90,7 @@ public class SysMonVerticleTest {
 			.putHeader("content-length", length)
 			.handler(response -> {
 				context.assertEquals(response.statusCode(), 201);
-				context.assertTrue(response.headers().get("content-type").contains("application/json"));
+				context.assertEquals(response.headers().get("content-type"), "application-json; charset=utf-8");
 				response.bodyHandler(body -> {
 					final Whiskey whiskey = Json.decodeValue(body.toString(), Whiskey.class);
 					context.assertEquals(whiskey.getName(), "Jameson");
