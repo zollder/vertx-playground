@@ -13,15 +13,44 @@ import java.net.ServerSocket;
 
 import org.app.model.Whiskey;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import de.flapdoodle.embed.mongo.MongodExecutable;
+import de.flapdoodle.embed.mongo.MongodProcess;
+import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.IMongodConfig;
+import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.Net;
+import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.process.runtime.Network;
 
 @RunWith(VertxUnitRunner.class)
 public class SysMonVerticleTest {
 
 	private Vertx vertx;
 	private Integer port;
+	private static MongodProcess MONGO;
+	private static int MONGO_PORT = 12345;
+
+	@BeforeClass
+	public static void initialize() throws IOException {
+		MongodStarter starter = MongodStarter.getDefaultInstance();
+		IMongodConfig mongodConfig = new MongodConfigBuilder()
+			.version(Version.Main.PRODUCTION)
+			.net(new Net(MONGO_PORT, Network.localhostIsIPv6()))
+			.build();
+		MongodExecutable mongodExecutable = starter.prepare(mongodConfig);
+		MONGO = mongodExecutable.start();
+	}
+
+	@AfterClass
+	public static void shutDown() {
+		MONGO.stop();
+	}
 
 	@Before
 	public void setUp(TestContext context) throws IOException {
@@ -35,9 +64,10 @@ public class SysMonVerticleTest {
 		// create deployment options and set the _configuration_json object
 		DeploymentOptions options = new DeploymentOptions()
 			.setConfig(new JsonObject()
-			.put("http.port", port)
-			.put("url", "jdbc:hsqldb:mem:test?shutdown=true")
-			.put("driver_class", "org.hsqldb.jdbcDriver"));
+				.put("http.port", port)
+				.put("db_name", "whiskies-test")
+				.put("connection_string", "mongodb://localhost:" + MONGO_PORT)
+			);
 
 		vertx.deployVerticle(SysMonVerticle.class.getName(), options, context.asyncAssertSuccess());
 	}
@@ -90,7 +120,7 @@ public class SysMonVerticleTest {
 			.putHeader("content-length", length)
 			.handler(response -> {
 				context.assertEquals(response.statusCode(), 201);
-				context.assertEquals(response.headers().get("content-type"), "application-json; charset=utf-8");
+				context.assertEquals(response.headers().get("content-type"), "application/json; charset=utf-8");
 				response.bodyHandler(body -> {
 					final Whiskey whiskey = Json.decodeValue(body.toString(), Whiskey.class);
 					context.assertEquals(whiskey.getName(), "Jameson");
