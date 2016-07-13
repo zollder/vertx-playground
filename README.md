@@ -1,11 +1,11 @@
-Prerequisites:
+##Prerequisites:
 	- docker
 	- docker-compose
 
-Run using:
+##Run using:
 	docker-compose up
 
-or do the following:
+##or do the following:
 
 	Build the project using:
 		mvn clean package
