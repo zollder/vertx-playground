@@ -1,16 +1,24 @@
+Prerequisites:
+	- docker
+	- docker-compose
 
-Build the project using:
-	mvn clean package
+Run using:
+	docker-compose up
 
-Start MongoDB with docker:
-	docker run --name mongo -d -p 27017:27017 mongo
+or do the following:
 
-Launch the fat jar as follows:
-	java -jar target/vertxmon-0.0.1-SNAPSHOT-fat.jar
+	Build the project using:
+		mvn clean package
 
-Or start with Docker in a host mode (Linux):
-	create docker image: docker build -t vertxmon .
-	run in host mode: docker run --name web -t -i -p 8080:8080 --net=host vertxmon
+	Start MongoDB with docker:
+		docker run --name mongo -d -p 27017:27017 mongo
+
+	Launch fat jar as follows:
+		java -jar target/vertxmon-0.0.1-SNAPSHOT-fat.jar
+
+	Or start with Docker in a host mode (Linux):
+		create docker image: docker build -t vertxmon .
+		run in host mode: docker run --name web -t -i -p 8080:8080 --net=host vertxmon
 
 TODO:
 	- try linking containers

@@ -1,7 +1,7 @@
 ###
 # Deploys a Java verticle inside Docker. The verticle is packaged as a fat jar.
 # To build: docker build -t vertxmon .
-# To run: docker run -t -i -p 8080:8080 vertxmon
+# To run: docker run -t -i -p 8080:8080 web
 ###
 
 FROM java:8-jre
